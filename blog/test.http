@@ -1,0 +1,4 @@
+GET localhost:8080/rate
+
+###
+GET localhost:6666
