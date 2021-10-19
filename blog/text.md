@@ -190,8 +190,8 @@ The bright side is the code actually works. You can go through a Task triggering
 
 With classic threaded approach it would be most likely easy to saturate thread pool even by hand. With our asynchronous example you can have a ton of Tasks in progress, so the main goal is accomplished.
 
-#Issue with blocking operations
-##Passing request context around is cumbersome
+# Issue with blocking operations
+## Passing request context around is cumbersome
 We learned that asynchronous approach results in efficient application, but also has some drawbacks. For starters your code does not reflect your program logic directly. Instead you have to manually control the flow, maintain state and pass requests context around which is cumbersome and error prone.
 
 ## Code becomes hardly readable
@@ -200,8 +200,8 @@ Your application business logic is hidden under implementation details and the a
 ## If only there were functions that could be easily suspended
 If only there were functions that could be easily suspended. We then could create our business logic in a convenient way and achieve asynchronous behaviour. Instead of passing context around fragments of our program we could just suspend the execution of a function while there is some blocking operation going on. That would be great, wouldn’t it?
 
-#Generators as function that can be suspended
-##Generators are functions that can be easily suspended
+# Generators as function that can be suspended
+## Generators are functions that can be easily suspended
 According to the glossary of Python official documentation a generator is a function which contains yield expressions. Each yield temporarily suspends processing, remembering the location execution state. When the generator resumes, it picks up where it left off. It seems generators are indeed functions that can be easily suspended. That is exactly what we were looking for.
 
 ##Details about generators
@@ -254,7 +254,7 @@ As you can see, the function became a generator when we used yield inside it. Wh
 
 There can be multiple yield statements in the generator. When execution reaches the end of the generator the StopIteration exception is thrown, just like with Iterators.
 
-##Yield from and returning value from yield
+## Yield from and returning value from yield
 You can embed one generator inside another with yield from expression. In the following example there is a generator using another generator twice to generate growing and falling numbers.
 
 ```python
@@ -318,7 +318,7 @@ $ python returning_generator.py
 Generated 5 numbers
 ```
 
-##Throwing an exception inside generator
+## Throwing an exception inside generator
 If an exception is raised within the generator it can be caught using the regular try/except statement in the wrapping generator.
 
 ```python
@@ -345,14 +345,14 @@ $ python failing_generator.py
 Something went wrong
 ```
 
-#Main loop running generators cooperatively
-##What if we model asynchronous operation as generators of events to be waited for
+# Main loop running generators cooperatively
+## What if we model asynchronous operation as generators of events to be waited for
 So we know that generators from the outside behave like a stream of values. From the inside they look very similar to regular functions. Their execution flow is easy to understand, because they look just like our standard imperative code. And we know they can be easily suspended. What if we model asynchronous operations as generators of events to be waited for? We could yield all the events from generators and still have readable and maintainable logic inside.
 
-#Create a map of generators waiting for some event
+# Create a map of generators waiting for some event
 Our generators could be kept in a map, connecting the generator to an event it is waiting for. When the event occurs we can simply take the next event from the generator and again wait for it to happen.
 
-#Add some logic between yields inside generators
+# Add some logic between yields inside generators
 Inside the generator we can have any amount of logic among yield expressions as long as there are no blocking operations. Basically we write our logic as if it was synchronous code but instead of blocking on some operation we yield what we are waiting for.
 
 Let’s rewrite the example with processes waiting for user input using the new approach.
@@ -439,8 +439,8 @@ Task queue size 0
 
 By simply replacing our complicated Task class with a short generator function and queue of tasks with a map of generators and their previously yielded value we manage to get very convenient, yet still very efficient asynchronous code. These actually are called coroutines!
 
-#Replace yield with await
-##Let’s try to replace yield with await
+# Replace yield with await
+## Let’s try to replace yield with await
 Do you think I’m stretching reality to call generators coroutines? Let’s see. First replace all yield from statements with await. Next add an async keyword to the generator definition. Finally wrap the events we await into classes with the __await__ operator method.
 
 ```python
@@ -529,16 +529,16 @@ This code still runs OK! What is more, you wouldn’t guess that we had implemen
 
 Now you can just replace input with select and yield descriptors of actual blocking operations like reading from socket and you can create your own asynchronous HTTP application.
 
-#Confront what we got with actual python situation
-##Coroutines in python used to be generators with annotations
+# Confront what we got with actual python situation
+## Coroutines in python used to be generators with annotations
 Actually the async/await syntax is present only since Python3.7. Prior to 3.7 coroutines were actually written as generators with special annotation attached to them.
 
-##There is an event loop with API providing blocking operations as awaitable functions
+## There is an event loop with API providing blocking operations as awaitable functions
 Python standard library provides us with a ready to use mainloop to run our coroutines as well as a set of convenient awaitable operations covering all the lowest level blocking operations we usually deal with. If you want to learn more about low level async API in Python PEP3156 is a great place to start. https://www.python.org/dev/peps/pep-3156/  
 
 Furthermore, there are a huge number of libraries making use of this low level API. They implement HTTP clients, web frameworks, database drivers and many others. My favourite asynchronous libraries in Python are: aiohttp and FastAPI.
-##Event loop 
+## Event loop 
 In fact, the Python event loop actually runs on futures, also known as promises in other languages. Coroutines are implemented with Tasks which are relying on futures, so our implementation is actually simplified. You should remember that when looking into Python sources, so you don’t get confused!
 
-#Ending
+# Ending
 I had hard times trying to figure out all the strange behaviours myself. It was only the understanding of how things work inside helped me finally feel it. I hope my explanation will help you not only understand how to use coroutines, but also will let you gain confidence and intuition about how asynchronous programming works. Happy coding!
